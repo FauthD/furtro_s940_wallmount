@@ -14,33 +14,33 @@
 PrintThis = "rail"; // ["rail", "plate", "holder", "mount"]
 
 /* [Sizes] */
-WallDistance = 9;
+CaseDistance = 9;
 
-RailLenght = 145;
-RailWidth = 17;
+RailWidth = 15;
 RailHeigth = 5.0;
-RailDistance = 230;  // !!!!!!!!!!!!!!!!!
 
 DistanceHolderWidth = 12;
 
 PlateThickness = 2.2;
 
-AirGap = 0.5;
+AirGap = 0.3;
 
 /* [Futro] */
 Lenght = 250;
 Width  = 185;
 Heigth = 52;
 
-ScrewDistance = 131.5;
+ScrewDistanceShort = 131.5;
+ScrewDistanceLong = 237.0;
+ScrewToCorner = 6;
 ScrewDiameter = 2.8;
 
 /* [Misc] */
 ScrewHeadDiameter = 6;
-
 MountingScrewDiameter = 3.6;
-
+MountingScrewDistance = 50;
 Rounding = 4;
+ExtraWallDistance = 12;
 
 /* [Hidden] */
 
@@ -58,6 +58,9 @@ epsilon = Epsilon;
 SlotWidth = RailWidth/2+AirGap;
 SlotThickness = RailHeigth/2+AirGap;
 
+RailLenght = 2*MountingScrewDistance + 20;
+RailDistance = ScrewDistanceLong - ScrewToCorner - RailWidth/2;
+
 use <RoundCornersCube.scad>
 
 module Rails()
@@ -66,77 +69,102 @@ module Rails()
    {
       union()
       {
-         Plate(h=RailHeigth);
+         translate([0, 0, SlotThickness])
+            Plate(l=RailDistance, h=PlateThickness);
+         Plate(l=RailDistance-2*SlotWidth-2*2*AirGap, h=SlotThickness);
       }
 
-      // slot
-      for(y=[1,-1])
-      {
-         translate([0, y*(RailDistance/2+SlotWidth/2), SlotThickness/2])
-            cube([RailLenght+Epsilon, SlotWidth+Epsilon, SlotThickness+Epsilon], center=true);
-      }
+      // // slot
+      // for(y=[1,-1])
+      // {
+      //    translate([0, y*(RailDistance/2+SlotWidth/2), SlotThickness/2])
+      //       #cube([RailLenght+Epsilon, SlotWidth+AirGap, SlotThickness+Epsilon], center=true);
+      // }
       MountingDrills();
    }
 }
+
 module MountingDrills()
 {
       for(x=[0,1,-1])
       {
-         for(y=[0,0.5,1,-0.5,-1])
+         for(y=[0,1,2,-1, -2])
          {
-            translate([x*(RailLenght/2-DistanceHolderWidth/2), y*(RailDistance/2-RailWidth/2), -RailHeigth])
-               cylinder(d=MountingScrewDiameter, h=3*RailHeigth);
+            translate([x*MountingScrewDistance, y*MountingScrewDistance, -RailHeigth])
+               cylinder(d=MountingScrewDiameter, h=3*RailHeigth+ExtraWallDistance);
          }
       }
 }
 
-module Plate(h=PlateThickness)
+module Plate(l, h=PlateThickness)
 {
    difference()
    {
       translate([0,0,h/2])
-         RoundCornersCube([RailLenght, RailDistance+RailWidth, h],center=true, r=Rounding);
+         RoundCornersCube([RailLenght, l, h],center=true, r=Rounding);
 
       MountingDrills();
 
       // big holes
       for(x=[1,-1])
       {
-         w=RailLenght/2-3.25*DistanceHolderWidth;
+         w=RailLenght/2-3.0*DistanceHolderWidth;
          translate([x*w, 0,0])
-            RoundCornersCube([RailLenght/2-1.5*DistanceHolderWidth, RailDistance-RailWidth, 3*RailHeigth],center=true, r=Rounding);
+            RoundCornersCube([RailLenght/2-2*DistanceHolderWidth, RailDistance-2.5*RailWidth, 3*RailHeigth],center=true, r=Rounding);
       }
+   }
+}
+
+module PlateWithExtraDistance()
+{
+   difference()
+   {
+      union()
+      {
+         Plate(l=RailDistance);
+
+         for(x=[0,1,-1])
+         {
+            for(y=[0,1,2,-1, -2])
+            {
+               translate([x*MountingScrewDistance, y*MountingScrewDistance, 0])
+                  cylinder(d=10, h=ExtraWallDistance);
+            }
+         }
+      }
+      MountingDrills();
    }
 }
 
 module Holder()
 {
    h=SlotThickness-2*AirGap;
-   h2=WallDistance;
+   h2=CaseDistance;
+   lenght = ScrewDistanceShort + 2*ScrewToCorner;
    difference()
    {
       union()
       {
-         translate([0,0, h/2])
-            RoundCornersCube([RailLenght, RailWidth-AirGap, h],center=true, r=Rounding);
+         translate([0, RailWidth/2, h/2])
+            RoundCornersCube([ScrewDistanceShort, RailWidth-AirGap, h],center=true, r=Rounding);
 
          for(x=[1,-1])
          {
-            l=13;
-            translate([x*(RailLenght/2-l/2), -RailWidth/4, h2/2]) 
-               RoundCornersCube([l, RailWidth/2, h2], center=true, r=Rounding);
+            l=ScrewToCorner;
+            translate([x*(lenght/2-l), 0, h2/2]) 
+               RoundCornersCube([2*l, 2*l, h2], center=true, r=Rounding);
          }
       }
 
       // drills
       for(x=[1,-1])
       {
-         translate([x*ScrewDistance/2, -RailWidth/4, -RailHeigth])
+         translate([x*ScrewDistanceShort/2, 0, -RailHeigth])
             cylinder(d=ScrewDiameter, h=3*RailHeigth);
 
          // screw head
-         translate([x*ScrewDistance/2, -RailWidth/4, -2])
-            cylinder(d=ScrewHeadDiameter, h=WallDistance);
+         translate([x*ScrewDistanceShort/2, 0, -2])
+            cylinder(d=ScrewHeadDiameter, h=CaseDistance);
       }
    }
 }
@@ -144,12 +172,19 @@ module Holder()
 module Mount()
 {
    color("blue")
-      rotate([0,180,0])
-         Rails();
+      Rails();
    color("brown")
-      translate ([0,0,-RailHeigth])
-         rotate([0,180,0])
-            Plate();
+      rotate([0,180,0])
+         PlateWithExtraDistance();
+
+   color("green")
+   {
+      translate ([0, -ScrewDistanceLong/2, AirGap])
+         Holder();
+      translate ([0, +ScrewDistanceLong/2, AirGap])
+         rotate([0,0, 180])
+            Holder();
+   }
 }
 
 module print(what="holder")
@@ -164,7 +199,7 @@ module print(what="holder")
    }
    if(what == "plate")
    {
-      Plate();
+      PlateWithExtraDistance();
    }
    if(what == "mount")
    {
