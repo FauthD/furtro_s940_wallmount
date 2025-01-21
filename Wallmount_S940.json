@@ -1,0 +1,17 @@
+{
+    "fileFormatVersion": "1",
+    "parameterSets": {
+        "rail": {
+            "PrintThis": "rail"
+        },
+        "holder": {
+            "PrintThis": "holder"
+        },
+        "plate": {
+            "PrintThis": "plate"
+        },
+        "mount_PNG": {
+            "PrintThis": "mount"
+        }
+    }
+}
