@@ -11,17 +11,15 @@
 
 /* [Print] */
 
-PrintThis = "rail"; // ["rail", "plate", "holder", "mount"]
+PrintThis = "rail"; // ["rail", "plate", "holder", "mount", "futro"]
 
 /* [Sizes] */
-CaseDistance = 9;
-
+CaseDistance = 7;
 RailWidth = 15;
-RailHeigth = 5.0;
 
 DistanceHolderWidth = 12;
 
-PlateThickness = 2.2;
+PlateThickness = 2.4;
 
 AirGap = 0.3;
 
@@ -29,6 +27,7 @@ AirGap = 0.3;
 Lenght = 250;
 Width  = 185;
 Heigth = 52;
+ScrewOffset = 12;
 
 ScrewDistanceShort = 131.5;
 ScrewDistanceLong = 237.0;
@@ -41,6 +40,8 @@ MountingScrewDiameter = 3.6;
 MountingScrewDistance = 50;
 Rounding = 4;
 ExtraWallDistance = 12;
+
+DrillHeigth = 5.0;
 
 /* [Hidden] */
 
@@ -56,7 +57,7 @@ Epsilon = 0.01;
 epsilon = Epsilon;
 
 SlotWidth = RailWidth/2+AirGap;
-SlotThickness = RailHeigth/2+AirGap;
+SlotThickness = PlateThickness+AirGap;
 
 RailLenght = 2*MountingScrewDistance + 20;
 RailDistance = ScrewDistanceLong - ScrewToCorner - RailWidth/2;
@@ -74,24 +75,22 @@ module Rails()
          Plate(l=RailDistance-2*SlotWidth-2*2*AirGap, h=SlotThickness);
       }
 
-      // // slot
-      // for(y=[1,-1])
-      // {
-      //    translate([0, y*(RailDistance/2+SlotWidth/2), SlotThickness/2])
-      //       #cube([RailLenght+Epsilon, SlotWidth+AirGap, SlotThickness+Epsilon], center=true);
-      // }
       MountingDrills();
+      // sink the screws a bit
+      h=3;
+      translate([0, 0, -h/2+SlotThickness+PlateThickness+Epsilon])
+         MountingDrills(d=8, h=h);
    }
 }
 
-module MountingDrills()
+module MountingDrills(d=MountingScrewDiameter, h=5*DrillHeigth+ExtraWallDistance)
 {
       for(x=[0,1,-1])
       {
-         for(y=[0,1,2,-1, -2])
+         for(y=[0,1.4,-1.4])
          {
-            translate([x*MountingScrewDistance, y*MountingScrewDistance, -RailHeigth])
-               cylinder(d=MountingScrewDiameter, h=3*RailHeigth+ExtraWallDistance);
+            translate([x*MountingScrewDistance, y*MountingScrewDistance, -h/2])
+               cylinder(d=d, h=h);
          }
       }
 }
@@ -108,9 +107,9 @@ module Plate(l, h=PlateThickness)
       // big holes
       for(x=[1,-1])
       {
-         w=RailLenght/2-3.0*DistanceHolderWidth;
+         w=RailLenght/2-3.0*DistanceHolderWidth+1;
          translate([x*w, 0,0])
-            RoundCornersCube([RailLenght/2-2*DistanceHolderWidth, RailDistance-2.5*RailWidth, 3*RailHeigth],center=true, r=Rounding);
+            RoundCornersCube([RailLenght/2-2*DistanceHolderWidth, RailDistance-2.5*RailWidth, 3*DrillHeigth],center=true, r=Rounding);
       }
    }
 }
@@ -123,14 +122,8 @@ module PlateWithExtraDistance()
       {
          Plate(l=RailDistance);
 
-         for(x=[0,1,-1])
-         {
-            for(y=[0,1,2,-1, -2])
-            {
-               translate([x*MountingScrewDistance, y*MountingScrewDistance, 0])
-                  cylinder(d=10, h=ExtraWallDistance);
-            }
-         }
+         translate([0, 0, ExtraWallDistance/2+PlateThickness])
+            MountingDrills(d=10, h=ExtraWallDistance);
       }
       MountingDrills();
    }
@@ -146,7 +139,7 @@ module Holder()
       union()
       {
          translate([0, RailWidth/2, h/2])
-            RoundCornersCube([ScrewDistanceShort, RailWidth-AirGap, h],center=true, r=Rounding);
+            RoundCornersCube([ScrewDistanceShort, RailWidth-2*AirGap, h],center=true, r=Rounding);
 
          for(x=[1,-1])
          {
@@ -159,12 +152,27 @@ module Holder()
       // drills
       for(x=[1,-1])
       {
-         translate([x*ScrewDistanceShort/2, 0, -RailHeigth])
-            cylinder(d=ScrewDiameter, h=3*RailHeigth);
+         translate([x*ScrewDistanceShort/2, 0, -DrillHeigth])
+            cylinder(d=ScrewDiameter, h=3*DrillHeigth);
 
          // screw head
          translate([x*ScrewDistanceShort/2, 0, -2])
             cylinder(d=ScrewHeadDiameter, h=CaseDistance);
+      }
+   }
+}
+
+module Futro()
+{
+   translate([0,0, Heigth/2])
+      cube([Width, Lenght, Heigth], center=true);
+   
+   for(x=[1,-1])
+   {
+      for(y=[1,-1])
+      {
+         translate([x*ScrewDistanceShort/2+ScrewOffset, y*ScrewDistanceLong/2, -5])
+            cylinder(d=ScrewDiameter, h=Heigth);
       }
    }
 }
@@ -185,6 +193,17 @@ module Mount()
          rotate([0,0, 180])
             Holder();
    }
+   color("gray", 0.4)
+   {
+      translate ([-ScrewOffset, 0, CaseDistance])
+         Futro();
+   }
+   // a screw head to check whether the room is big enough
+   color("black")
+   {
+      translate ([0, RailDistance/2, SlotThickness+PlateThickness-3])
+         cylinder(d=6, h=4);
+   }
 }
 
 module print(what="holder")
@@ -204,6 +223,10 @@ module print(what="holder")
    if(what == "mount")
    {
       Mount();
+   }
+   if(what == "futro")
+   {
+      Futro();
    }
 }
 
