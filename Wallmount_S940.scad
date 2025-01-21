@@ -29,14 +29,14 @@ Width  = 185;
 Heigth = 52;
 ScrewOffset = 12;
 
-ScrewDistanceShort = 131.5;
+ScrewDistanceShort = 131.8;
 ScrewDistanceLong = 237.0;
 ScrewToCorner = 6;
-ScrewDiameter = 2.8;
+ScrewDiameter = 3.0;
 
 /* [Misc] */
-ScrewHeadDiameter = 6;
-MountingScrewDiameter = 3.6;
+ScrewHeadDiameter = 7.0;
+MountingScrewDiameter = 3.9;
 MountingScrewDistance = 50;
 Rounding = 4;
 ExtraWallDistance = 12;
