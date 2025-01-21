@@ -214,12 +214,13 @@ module print(what="holder")
    }
    if(what == "rail")
    {
-      rotate([0,180,0])
+      rotate([0,180,90])
          Rails();
    }
    if(what == "plate")
    {
-      PlateWithExtraDistance();
+      rotate([0,0,90])
+         PlateWithExtraDistance();
    }
    if(what == "mount")
    {
