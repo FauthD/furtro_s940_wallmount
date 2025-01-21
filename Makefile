@@ -4,7 +4,7 @@ TARGETNAME=Wallmount_S940
 
 # scad files that are included (include or use)
 DEPS =
-DEPS+=dfLibscad/RoundCornersCube.scad
+DEPS+=RoundCornersCube.scad
 
 # Results
 OUTPUTDIR=STL
@@ -62,7 +62,7 @@ PARTS_PNG = $(subst ",, $(subst : $(OPENBRACE),,$(RAW_PARTS_PNG)))
 PARTS_STL = $(subst ",, $(subst : $(OPENBRACE),,$(RAW_PARTS_STL)))
 ###########################################################
 else
-PARTS_PNG = $(shell openscadcustomizer.py --directory customizer --list)
+PARTS_PNG = $(shell openscadcustomountmizer.py --directory customizer --list)
 PARTS_STL = $(filter-out %PNG, $(PARTS_PNG))
 endif
 
