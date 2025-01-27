@@ -131,15 +131,20 @@ module PlateWithExtraDistance()
 
 module Holder()
 {
-   h=SlotThickness-2*AirGap;
+   h=SlotThickness-AirGap;
    h2=CaseDistance;
+   w=RailWidth-2*AirGap;
    lenght = ScrewDistanceShort + 2*ScrewToCorner;
    difference()
    {
       union()
       {
-         translate([0, RailWidth/2, h/2])
-            RoundCornersCube([ScrewDistanceShort, RailWidth-2*AirGap, h],center=true, r=Rounding);
+         translate([0, w/2, h/2])
+            RoundCornersCube([ScrewDistanceShort, w, h],center=true, r=Rounding);
+
+         // enforce
+         translate([0, 3/2, 1.5*h/2])
+            cube([ScrewDistanceShort, 3, 1.5*h], center=true);
 
          for(x=[1,-1])
          {
